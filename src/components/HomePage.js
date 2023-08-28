@@ -21,35 +21,48 @@ function HomePage() {
   const userInputHandler = (e) => {
     e.preventDefault();
     const player = userInput.split(" ").join("_");
+    console.log(player);
     findPlayer(player);
   };
 
   const findPlayer = async function (namePlayer) {
-    const player = await fetch(
-      `https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${namePlayer}`
-    );
-    const info = await player.json();
-    console.log(info.player[0]);
-    setPlayerName(info.player[0].strPlayer);
-    setPlayerImg(info.player[0].strCutout);
-    setPlayerPosition(info.player[0].strPosition);
-    setPlayerInfo(info.player[0].idPlayer);
+    try {
+      const player = await fetch(
+        `https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${namePlayer}`
+      );
+      const info = await player.json();
+      console.log(info.player);
 
-    const clubName = info.player[0].strTeam;
-    const nationality = info.player[0].strNationality.toLowerCase();
-    console.log(clubName);
+      if (!player.ok) {
+        throw new Error("Something went wrong");
+      }
 
-    const curentClub = footballClubs.filter((footballClub) =>
-      footballClub.club.includes(clubName.split(" ").join("-"))
-    );
+      if (!info.player) {
+        throw new Error("There is no info about player");
+      }
 
-    setClubImg(curentClub[0]);
+      setPlayerName(info.player[0].strPlayer);
+      setPlayerImg(info.player[0].strCutout);
+      setPlayerPosition(info.player[0].strPosition);
+      setPlayerInfo(info.player[0].idPlayer);
 
-    const nation = await fetch(
-      `https://restcountries.com/v3.1/name/${nationality}`
-    );
-    const nationData = await nation.json();
-    setNationalityImg(nationData[0].flags.png);
+      const clubName = info.player[0].strTeam;
+      const nationality = info.player[0].strNationality.toLowerCase();
+
+      const curentClub = footballClubs.filter((footballClub) =>
+        footballClub.club.includes(clubName.split(" ").join("-"))
+      );
+
+      setClubImg(curentClub[0]);
+
+      const nation = await fetch(
+        `https://restcountries.com/v3.1/name/${nationality}`
+      );
+      const nationData = await nation.json();
+      setNationalityImg(nationData[0].flags.png);
+    } catch (er) {
+      console.error(er);
+    }
   };
 
   return (
